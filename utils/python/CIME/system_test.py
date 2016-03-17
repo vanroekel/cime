@@ -718,7 +718,7 @@ class SystemTest(object):
         status_str = "Finished %s for test %s in %f seconds (%s)" %\
                      (test_phase, test, elapsed_time, status)
         if not success:
-            status_str += "    Case dir: %s" % self._get_test_dir(test)
+            status_str += "\n    Case dir: %s" % self._get_test_dir(test)
         logger.info(status_str)
 
         # On batch systems, we want to immediately submit to the queue, because
