@@ -512,8 +512,9 @@ class SystemTest(object):
     def _setup_phase(self, test):
     ###########################################################################
         test_dir  = self._get_test_dir(test)
+        extra_args = " --no-batch" if self._no_batch else ""
 
-        return self._shell_cmd_for_phase(test, "./case.setup", SETUP_PHASE, from_dir=test_dir)
+        return self._shell_cmd_for_phase(test, "./case.setup%s" % extra_args, SETUP_PHASE, from_dir=test_dir)
 
     ###########################################################################
     def _nlcomp_phase(self, test):
@@ -791,7 +792,7 @@ class SystemTest(object):
             template_file = os.path.join(python_libs_root, "cs.submit.template")
             template = open(template_file, "r").read()
             build_cmd = "./*.build" if self._no_build else ":"
-            run_cmd = "./*.test" if self._no_batch else "./*.submit"
+            run_cmd = "./*.submit"
             template = template.replace("<BUILD_CMD>",
                                         build_cmd).replace("<RUN_CMD>",
                                                            run_cmd).replace("<TESTID>",

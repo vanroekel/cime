@@ -29,13 +29,14 @@ logger = logging.getLogger(__name__)
 
 class BatchMaker(object):
 
-    def __init__(self, job, case=None):
+    def __init__(self, job, case=None, no_batch=False):
         """
         Class constructor.  We need to know where in the filesystem we are,
         so caseroot, case, machroot, machine, cimeroot
         """
         self.case = case if case is not None else Case()
         self.job = job
+        self.no_batch = no_batch
 
         self.override_node_count = None
 
@@ -56,7 +57,7 @@ class BatchMaker(object):
             self.env_batch = EnvBatch()
 
             self.config_machines_parser = Machines(machine=self.case.get_value("MACH"))
-            self.batch_system = self.config_machines_parser.get_batch_system_type()
+            self.batch_system = "none" if self.no_batch else self.config_machines_parser.get_batch_system_type()
             self.batch_parser = Batch(self.batch_system, machine=self.config_machines_parser.get_machine_name())
 
             self._initialize()
@@ -107,6 +108,10 @@ class BatchMaker(object):
             self.pedocumentation = ""
 
     def _set_queue(self):
+        if self.no_batch:
+            self.queue = ""
+            return
+
         self.queue = self.env_batch.get_value("JOB_QUEUE", subgroup=self.job)
         self.ccsm_estcost = self.case.get_value("CCSM_ESTCOST")
         self.wall_time_max = None
@@ -132,6 +137,10 @@ class BatchMaker(object):
             logger.info("Using queue %s for job %s" % (self.queue,self.job))
 
     def _set_wall_time(self):
+        if self.no_batch:
+            self.wall_time = "0"
+            return
+
         # Get the wallclock time from env_batch.xml if its defined there
         # otherwise get the default from config_machines.xml
         # and set it in env_batch.xml
@@ -211,7 +220,7 @@ within model's Machines directory, and add a batch system type for this machine
         """
         Set the batch directives for this machine from config_batch.xml
         """
-        batch_directives = self.batch_parser.get_batch_directives(self)
+        batch_directives = [] if self.no_batch else self.batch_parser.get_batch_directives(self)
 
         self.batchdirectives = "\n".join(batch_directives)
 
@@ -265,7 +274,7 @@ within model's Machines directory, and add a batch system type for this machine
 
 # TODO: Machine-specific overrides
 
-def get_batch_maker(job, case=None):
+def get_batch_maker(job, case=None, no_batch=False):
     """
     Simple factory class to get the right BatchMaker class for each machine.
     The only downside to this strategy is that we have to have a BatchMaker_${machine}
@@ -276,7 +285,7 @@ def get_batch_maker(job, case=None):
     case = case if case is not None else Case()
 
     machine = case.get_value("MACH")
-    batch_maker = BatchMaker(job, case)
+    batch_maker = BatchMaker(job, case, no_batch)
     subclassname = "BatchMaker_%s" % machine
     if "pleiades" in machine:
         new_machine = machine.replace("-", "_")
@@ -287,11 +296,9 @@ def get_batch_maker(job, case=None):
     else:
         return batch_maker
 
-
 def find_project():
     project = None
     for envvar in ("PROJECT", "ACCOUNT"):
         project = os.environ.get(envvar)
         if project is not None:
             return project
-

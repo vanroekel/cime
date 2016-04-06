@@ -513,7 +513,7 @@ class TestSystemTest(TestCreateTestCommon):
         finally:
             sys.stdout = sys.__stdout__
 
-        if (self._hasbatch):
+        if (self._hasbatch and not NO_BATCH):
             run_cmd("%s/wait_for_tests *%s*/TestStatus*" % (TOOLS_DIR, test_id), ok_to_fail=True, from_dir=self._testroot)
 
         test_statuses = glob.glob("%s/*%s*/TestStatus" % (self._testroot, test_id))
@@ -633,7 +633,7 @@ class TestBlessTestResults(TestCreateTestCommon):
         cmd = "%s/create_test %s %s" % (SCRIPT_DIR, self._test_name, extra_args)
         stat, output, errput = run_cmd(cmd, ok_to_fail=True)
 
-        if (self._hasbatch):
+        if (self._hasbatch and not NO_BATCH):
             self.assertEqual(stat, 0, msg="COMMAND '%s' SHOULD HAVE WORKED\ncreate_test output:\n%s\n\nerrput:\n%s\n\ncode: %d" % (cmd, output, errput, stat))
             test_id = extra_args.split()[extra_args.split().index("-t") + 1]
             stat, output, errput = run_cmd("%s/wait_for_tests *%s*/TestStatus" % (TOOLS_DIR, test_id), ok_to_fail=True, from_dir=self._testroot)
@@ -757,7 +757,7 @@ class FullSystemTest(TestCreateTestCommon):
         self.assertEqual(stat, 0,
                          msg="COMMAND SHOULD HAVE WORKED\ncreate_test output:\n%s\n\nerrput:\n%s\n\ncode: %d" % (output, errput, stat))
 
-        if (MACHINE.has_batch_system()):
+        if (MACHINE.has_batch_system() and not NO_BATCH):
             stat, output, errput = run_cmd("%s/wait_for_tests *%s*/TestStatus" % (TOOLS_DIR, self._baseline_name),
                                            ok_to_fail=True, from_dir=self._testroot)
             self.assertEqual(stat, 0,

@@ -78,7 +78,7 @@ def _build_usernl_files(case, model, comp):
                     shutil.copy(model_nl, nlfile)
 
 ###############################################################################
-def case_setup(caseroot, clean=False, test_mode=False, reset=False):
+def case_setup(caseroot, clean=False, test_mode=False, reset=False, no_batch=False):
 ###############################################################################
 
     os.chdir(caseroot)
@@ -230,7 +230,7 @@ def case_setup(caseroot, clean=False, test_mode=False, reset=False):
             batchmaker = None
             for (job, template, task_count) in batch_jobs:
                 if batchmaker is None:
-                    batchmaker = get_batch_maker(job, case=case)
+                    batchmaker = get_batch_maker(job, case=case, no_batch=no_batch)
                 else:
                     if task_count == "default":
                         batchmaker.override_node_count = None
@@ -277,7 +277,7 @@ def case_setup(caseroot, clean=False, test_mode=False, reset=False):
         if os.path.exists("env_test.xml"):
             if not os.path.exists("case.test"):
                 logger.info("Starting testcase.setup")
-                run_cmd("./testcase.setup -caseroot %s" % caseroot)
+                testcase_setup(case, batchmaker)
                 logger.info("Finished testcase.setup")
 
         with open("CaseStatus", "a") as fd:

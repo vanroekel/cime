@@ -125,7 +125,10 @@ class GenericXML(object):
                     if not nodes:
                         return []
         else:
-            nodes = root.findall(xpath)
+            try:
+                nodes = root.findall(xpath)
+            except Exception as e:
+                expect(False, "root.findall(%s) failed: %s" % (xpath, e))
 
         return nodes
 
