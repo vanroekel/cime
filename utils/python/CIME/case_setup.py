@@ -80,12 +80,17 @@ def _build_usernl_files(case, model, comp):
 ###############################################################################
 def case_setup(caseroot, clean=False, test_mode=False, reset=False, no_batch=False):
 ###############################################################################
-
     os.chdir(caseroot)
 
     cimeroot = os.environ["CIMEROOT"]
 
     case = Case()
+
+    if no_batch:
+        case.set_value("batch_system", "none")
+        case.set_value("BATCHQUERY", "")
+        case.set_value("BATCHSUBMIT", "")
+        case.set_value("BATCHREDIRECT", "")
 
     # Check that $DIN_LOC_ROOT exists - and abort if not a namelist compare tests
     din_loc_root = case.get_value("DIN_LOC_ROOT")
@@ -277,7 +282,8 @@ def case_setup(caseroot, clean=False, test_mode=False, reset=False, no_batch=Fal
         if os.path.exists("env_test.xml"):
             if not os.path.exists("case.test"):
                 logger.info("Starting testcase.setup")
-                testcase_setup(case, batchmaker)
+                # TODO: testcase_setup(case, batchmaker)
+                run_cmd("./testcase.setup -caseroot %s" % caseroot)
                 logger.info("Finished testcase.setup")
 
         with open("CaseStatus", "a") as fd:
