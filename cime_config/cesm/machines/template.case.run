@@ -34,7 +34,6 @@ require SetupTools;
 require Run::RunChecks;
 require Depends::Checks;
 require Module::ModuleLoader;
-require Batch::BatchUtils;
 require Log::Log4perl;
 my $logger;
 

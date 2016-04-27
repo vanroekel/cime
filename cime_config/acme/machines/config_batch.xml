@@ -125,23 +125,20 @@
      </directives>
    </batch_system>
 
-    <!-- blues is PBS -->
-    <batch_system MACH="blues" version="x.y">
+    <batch_system type="pbs" MACH="blues" version="x.y">
       <directives>
         <directive>-A {{ project }}</directive>
         <directive>-l nodes={{ num_nodes }}:ppn={{ tasks_per_node }}</directive>
       </directives>
     </batch_system>
 
-    <!-- edison is SLURM as of Jan-4-2016 -->
-    <batch_system MACH="edison" version="x.y">
+    <batch_system type="slurm" MACH="edison" version="x.y">
       <directives>
         <directive> -A {{ account }} </directive>
       </directives>
     </batch_system>
 
-    <!-- eos is PBS -->
-    <batch_system MACH="eos" version="x.y">
+    <batch_system type="pbs" MACH="eos" version="x.y">
     <jobid_pattern>^(\d+)</jobid_pattern>
     <directives>
       <directive>-A {{ project }}</directive>
@@ -150,17 +147,13 @@
     </directives>
    </batch_system>
 
-     <!-- skybridge is slurm -->
-
-   <batch_system MACH="skybridge" version="x.y">
+   <batch_system type="slurm" MACH="skybridge" version="x.y">
      <directives>
        <directive>--account={{ project }}</directive>
      </directives>
    </batch_system>
 
-   <!-- Constance is slurm -->
-
-   <batch_system MACH="constance" version="x.y">
+   <batch_system type="slurm" MACH="constance" version="x.y">
     <directives>
        <directive>-A  climate</directive>
        <directive>--mail-type=END</directive>
@@ -170,39 +163,39 @@
     </directives>
    </batch_system>
 
-   <batch_system MACH="redsky" version="x.y">
+   <batch_system type="slurm" MACH="redsky" version="x.y">
      <directives>
        <directive>--account={{ project }}</directive>
      </directives>
    </batch_system>
 
-   <batch_system MACH="mustang" version="x.y">
+   <batch_system type="moab" MACH="mustang" version="x.y">
    <batch_directive>#MSUB</batch_directive>
    <directives>
      <directive>-l nodes={{ num_nodes }}:ppn={{ tasks_per_node }}</directive>
    </directives>
    </batch_system>
 
-   <batch_system MACH="wolf" version="x.y">
+   <batch_system type="moab" MACH="wolf" version="x.y">
      <batch_directive>#MSUB</batch_directive>
 	<directives>
 		<directive>-l nodes={{ num_nodes }}:ppn={{ tasks_per_node }}</directive>
 	</directives>
     </batch_system>
 
-   <batch_system MACH="oic2" version="x.y">
+   <batch_system type="pbs" MACH="oic2" version="x.y">
          <directives>
                  <directive>-l nodes={{ num_nodes }}:ppn={{ tasks_per_node }}</directive>
          </directives>
    </batch_system>
 
-   <batch_system MACH="oic5" version="x.y">
+   <batch_system type="pbs" MACH="oic5" version="x.y">
          <directives>
                  <directive>-l nodes={{ num_nodes }}:ppn={{ tasks_per_node }}</directive>
          </directives>
    </batch_system>
 
-   <batch_system MACH="titan" version="x.y">
+   <batch_system type="pbs" MACH="titan" version="x.y">
      <jobid_pattern>(\d+)</jobid_pattern>
      <directives>
        <directive>-A {{ project }}</directive>

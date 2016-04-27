@@ -134,7 +134,7 @@ class BatchMaker(object):
 
         if self.queue:
             self.case.set_value("JOB_QUEUE", self.queue, subgroup=self.job)
-            logger.info("Using queue %s for job %s" % (self.queue,self.job))
+            logger.info("Using queue %s for job %s" % (self.queue, self.job))
 
     def _set_wall_time(self):
         if self.no_batch:
