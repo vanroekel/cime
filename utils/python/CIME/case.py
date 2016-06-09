@@ -383,6 +383,61 @@ class Case(object):
             if result is not None:
                 del self.lookups[key]
 
+    def set_machine(self, machine_name=None, compiler=None, mpilib=None):
+
+        machobj = Machines(machine=machine_name)
+        machine_name = machobj.get_machine_name()
+        self.set_value("MACH",machine_name)
+        nodenames = machobj.get_node_names()
+        nodenames =  [x for x in nodenames if
+                      '_system' not in x and '_variables' not in x and 'mpirun' not in x and\
+                      'COMPILER' not in x and 'MPILIB' not in x]
+
+        for nodename in nodenames:
+            value = machobj.get_value(nodename)
+            type_str = self.get_type_info(nodename)
+            if type_str is not None:
+                self.set_value(nodename, convert_to_type(value, type_str, nodename))
+
+        machdir = machobj.get_machines_dir()
+        self.set_value("MACHDIR", machdir)
+
+        if compiler is None:
+            compiler = machobj.get_default_compiler()
+        else:
+            expect(machobj.is_valid_compiler(compiler),
+                   "compiler %s is not supported on machine %s" %(compiler, machine_name))
+
+        self.set_value("COMPILER",compiler)
+
+        if mpilib is None:
+            mpilib = machobj.get_default_MPIlib({"compiler":compiler})
+        else:
+            expect(machobj.is_valid_MPIlib(mpilib, {"compiler":compiler}),
+                   "MPIlib %s is not supported on machine %s" %(mpilib, machine_name))
+        self.set_value("MPILIB",mpilib)
+
+        return machobj
+
+
+
+
+    def set_batch_system(self, machobj, pesize=None, batch_system_type=None):
+        #--------------------------------------------
+        # batch system
+        #--------------------------------------------
+        machine_name = self.get_value("MACH")
+        batch_system_type = machobj.get_value("BATCH_SYSTEM")
+        batch = Batch(batch_system=batch_system_type, machine=machine_name)
+        bjobs = batch.get_batch_jobs()
+        env_batch = self._get_env("batch")
+        env_batch.set_batch_system(batch, batch_system_type=batch_system_type)
+        env_batch.create_job_groups(bjobs)
+        if pesize is None:
+            pesize = self.get_value("PES_PER_NODE")
+        env_batch.set_job_defaults(bjobs, pesize=pesize)
+        self._env_files_that_need_rewrite.add(env_batch)
+
     def configure(self, compset_name, grid_name, machine_name=None,
                   project=None, pecount=None, compiler=None, mpilib=None,
                   user_compset=False, pesfile=None,
@@ -425,37 +480,7 @@ class Case(object):
         # machine
         #--------------------------------------------
         # set machine values in env_xxx files
-        machobj = Machines(machine=machine_name)
-        machine_name = machobj.get_machine_name()
-        self.set_value("MACH",machine_name)
-        nodenames = machobj.get_node_names()
-        nodenames =  [x for x in nodenames if
-                      '_system' not in x and '_variables' not in x and 'mpirun' not in x and\
-                      'COMPILER' not in x and 'MPILIB' not in x]
-
-        for nodename in nodenames:
-            value = machobj.get_value(nodename)
-            type_str = self.get_type_info(nodename)
-            if type_str is not None:
-                self.set_value(nodename, convert_to_type(value, type_str, nodename))
-
-        if compiler is None:
-            compiler = machobj.get_default_compiler()
-        else:
-            expect(machobj.is_valid_compiler(compiler),
-                   "compiler %s is not supported on machine %s" %(compiler, machine_name))
-
-        self.set_value("COMPILER",compiler)
-
-        if mpilib is None:
-            mpilib = machobj.get_default_MPIlib({"compiler":compiler})
-        else:
-            expect(machobj.is_valid_MPIlib(mpilib, {"compiler":compiler}),
-                   "MPIlib %s is not supported on machine %s" %(mpilib, machine_name))
-        self.set_value("MPILIB",mpilib)
-
-        machdir = machobj.get_machines_dir()
-        self.set_value("MACHDIR", machdir)
+        machobj = self.set_machine(machine_name=machine_name, compiler=compiler, mpilib=mpilib)
 
         # Overwriting an existing exeroot or rundir can cause problems
         exeroot = self.get_value("EXEROOT")
@@ -524,18 +549,7 @@ class Case(object):
             mach_pes_obj.set_value("NTASKS_GLC",1)
             mach_pes_obj.set_value("NTHRDS_GLC",1)
 
-        #--------------------------------------------
-        # batch system
-        #--------------------------------------------
-        batch_system_type = machobj.get_value("BATCH_SYSTEM")
-        batch = Batch(batch_system=batch_system_type, machine=machine_name)
-        bjobs = batch.get_batch_jobs()
-        env_batch = self._get_env("batch")
-        env_batch.set_batch_system(batch, batch_system_type=batch_system_type)
-        env_batch.create_job_groups(bjobs)
-        env_batch.set_job_defaults(bjobs, pesize=maxval)
-        self._env_files_that_need_rewrite.add(env_batch)
-
+        self.set_batch_system(machobj)
         self.set_value("COMPSET",self._compsetname)
 
         self._set_pio_xml()

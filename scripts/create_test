@@ -13,8 +13,7 @@ from Tools.standard_script_setup import *
 import update_acme_tests
 from CIME.system_test import SystemTest, RUN_PHASE
 from CIME.utils import expect, convert_to_seconds, compute_total_time, convert_to_babylonian_time, run_cmd
-from CIME.XML.machines import Machines
-from CIME.XML.batch import Batch
+from CIME.case import Case
 
 import argparse, doctest, tempfile, math
 
@@ -209,16 +208,16 @@ OR
 ###############################################################################
 def single_submit_impl(machine_name, test_id, proc_pool, project, args, job_cost_map, wall_time):
 ###############################################################################
-    mach = Machines(machine=machine_name)
-    expect(mach.has_batch_system(), "Single submit does not make sense on non-batch machine '%s'" % mach.get_machine_name())
+    # Create a case object with machine and batch information
+    case = Case()
+    machobj = case.set_machine(machine_name=machine_name)
 
-    machine_name = mach.get_machine_name()
-    batch = Batch(batch_system=mach.get_batch_system_type(), machine=machine_name)
+    expect(machobj.has_batch_system(), "Single submit does not make sense on non-batch machine '%s'" % machobj.get_machine_name())
 
     if project is None:
         project = CIME.utils.get_project()
         if project is None:
-            project = mach.get_value("PROJECT")
+            project = case.get_value("PROJECT")
 
     #
     # Compute arg list for second call to create_test
@@ -245,39 +244,7 @@ def single_submit_impl(machine_name, test_id, proc_pool, project, args, job_cost
     if no_arg_is_a_machine_arg:
         new_args.append("-m %s" % machine_name)
 
-    #
-    # Resolve batch directives manually. There is currently no other way
-    # to do this without making a Case object.
-    #
-    directives = "\n".join(batch.get_batch_directives())
-    submit_cmd = mach.get_value("BATCHSUBMIT")
-    submit_args = " ".join(batch.get_submit_args())
-
-    tasks_per_node = int(mach.get_value("PES_PER_NODE"))
-    num_nodes = int(math.ceil(float(proc_pool) / tasks_per_node))
-    if wall_time is None:
-        wall_time = compute_total_time(job_cost_map, proc_pool)
-        wall_time_bab = convert_to_babylonian_time(int(wall_time))
-    else:
-        wall_time_bab = wall_time
-
-    queue = mach.select_best_queue(proc_pool)
-    wall_time_max_bab = mach.get_max_walltime(queue)
-    if wall_time_max_bab is not None:
-        wall_time_max = convert_to_seconds(wall_time_max_bab)
-        if wall_time_max < wall_time:
-            wall_time = wall_time_max
-            wall_time_bab = convert_to_babylonian_time(wall_time)
-
-    directives = directives.replace("{{ job_id }}", "create_test_single_submit_%s" % test_id)
-    directives = directives.replace("{{ num_nodes }}", str(num_nodes))
-    directives = directives.replace("{{ tasks_per_node }}", str(tasks_per_node))
-    directives = directives.replace("{{ output_error_path }}", "create_test_single_submit_%s.err" % test_id)
-    directives = directives.replace("{{ wall_time }}", wall_time_bab)
-    directives = directives.replace("{{ queue }}", queue)
-    directives = directives.replace("{{ project }}", project)
-
-    expect("{{" not in directives, "Could not resolve all items in directives:\n%s" % directives)
+    self.set_batch_system(machobj, pesize=proc_pool)
 
     #
     # Make simple submit script and submit
@@ -334,14 +301,7 @@ def create_test(testargs, compiler, machine_name, no_run, no_build, no_batch, te
         for test in impl._tests:
             test_dir = impl._get_test_dir(test)
             procs_needed = impl._get_procs_needed(test, RUN_PHASE)
-            # Restore once we have new xmlquery
-            #time_needed = convert_to_seconds(run_cmd("./xmlquery JOB_WALLCLOCK_TIME -value", from_dir=test_dir))
-            stat, output, errput = run_cmd("grep JOB_WALLCLOCK_TIME env_batch.xml | grep :", from_dir=test_dir, ok_to_fail=True)
-            if stat == 0:
-                time_needed = output.split('value="')[1].replace('">', "")
-                time_needed = convert_to_seconds(time_needed)
-            else:
-                time_needed = 60 # HACK
+            time_needed = convert_to_seconds(run_cmd("./xmlquery JOB_WALLCLOCK_TIME --value --attribute case.test", from_dir=test_dir))
 
             job_cost_map[test] = (procs_needed, time_needed)
             if procs_needed > largest_case:
