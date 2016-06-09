@@ -221,6 +221,15 @@ def single_submit_impl(machine_name, test_root, test_id, proc_pool, project, arg
         ntasks = proc_pool
     else:
         ntasks = PES_PER_NODE
+    # dont like this part
+    for comp in ("ATM", "LND", "CPL", "ROF", "ICE"\
+                     "GLC", "ESP", "OCN"):
+        case.set_value("NTASKS_"+comp, ntasks)
+        case.set_value("ROOTPE_"+comp, 0)
+        case.set_value("NTHRDS_"+comp, 1)
+        case.set_value("PSTRID_"+comp, 1)
+        case.set_value("NINST_"+comp, 1)
+
 
     if test_root is not None:
         case.set_value("CASEROOT", test_root)
