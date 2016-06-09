@@ -14,6 +14,17 @@ class TaskMaker(object):
     def __init__(self, case, remove_dead_tasks=False):
         self.case = case
         self.remove_dead_tasks = remove_dead_tasks
+        self.NTASKS = None
+        self.max_threads = None
+        self.task_geom = None
+        self.thread_geom = None
+        self.task_count = None
+        self.thread_count = None
+        self.ptile = None
+        self.task_per_node = None
+        self.MAX_TASKS_PER_NODE = None
+        self.task_per_numa = None
+        self.total_tasks = None
 
         drv_comp = Component()
         models = drv_comp.get_valid_model_components()

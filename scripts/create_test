@@ -12,7 +12,8 @@ from Tools.standard_script_setup import *
 
 import update_acme_tests
 from CIME.system_test import SystemTest, RUN_PHASE
-from CIME.utils import expect, convert_to_seconds, compute_total_time, convert_to_babylonian_time, run_cmd
+from CIME.utils import expect, convert_to_seconds, compute_total_time, convert_to_babylonian_time, \
+    run_cmd, get_cime_root
 from CIME.case import Case
 
 import argparse, doctest, tempfile, math
@@ -206,11 +207,25 @@ OR
         args.single_submit, args.proc_pool, args.use_existing
 
 ###############################################################################
-def single_submit_impl(machine_name, test_id, proc_pool, project, args, job_cost_map, wall_time):
+def single_submit_impl(machine_name, test_root, test_id, proc_pool, project, args, job_cost_map, wall_time):
 ###############################################################################
-    # Create a case object with machine and batch information
+    # Create a fake case object with machine and batch information to create a submit script
     case = Case()
     machobj = case.set_machine(machine_name=machine_name)
+    machine_name = machobj.get_machine_name()
+    # a few things we need here
+    pes_per_node =  machobj.get_value("PES_PER_NODE")
+    case.set_value("PES_PER_NODE", pes_per_node)
+    case.set_value("CASE", "single_submit")
+    if proc_pool is not None:
+        ntasks = proc_pool
+    else:
+        ntasks = PES_PER_NODE
+
+    if test_root is not None:
+        case.set_value("CASEROOT", test_root)
+    else:
+        case.set_value("CASEROOT", os.getcwd())
 
     expect(machobj.has_batch_system(), "Single submit does not make sense on non-batch machine '%s'" % machobj.get_machine_name())
 
@@ -244,20 +259,25 @@ def single_submit_impl(machine_name, test_id, proc_pool, project, args, job_cost
     if no_arg_is_a_machine_arg:
         new_args.append("-m %s" % machine_name)
 
-    self.set_batch_system(machobj, pesize=proc_pool)
+    case.set_batch_system(machobj, pesize=ntasks)
 
     #
     # Make simple submit script and submit
     #
 
-    script = "#! /bin/bash\n"
-    script += "\n%s" % directives
-    script += "\n"
-    script += "create_test %s\n" % " ".join(new_args)
+    template = "#! /bin/bash\n"
+    template += "\n {{ directives }} \n"
+    template += "cd " + os.path.join(get_cime_root(), "scripts")
+    template += "\n./create_test %s\n" % " ".join(new_args)
 
-    submit_cmd = "%s %s" % (submit_cmd, submit_args)
+    script = case.make_batch_script(template, "single.submit")
 
-    run_cmd(submit_cmd, input_str=script, arg_stdout=None, arg_stderr=None)
+    print script
+
+
+
+#    submit_cmd = "%s %s" % (submit_cmd, submit_args)
+#    run_cmd(submit_cmd, input_str=script, arg_stdout=None, arg_stderr=None)
 
 ###############################################################################
 def create_test(testargs, compiler, machine_name, no_run, no_build, no_batch, test_root,
@@ -312,7 +332,7 @@ def create_test(testargs, compiler, machine_name, no_run, no_build, no_batch, te
             proc_pool = 2 * largest_case
 
         # Create submit script
-        single_submit_impl(machine_name, test_id, proc_pool, project, sys.argv[1:], job_cost_map, walltime)
+        single_submit_impl(machine_name, test_root, test_id, proc_pool, project, sys.argv[1:], job_cost_map, walltime)
 
     return 0 if success else CIME.utils.TESTS_FAILED_ERR_CODE
 

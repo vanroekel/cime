@@ -1,7 +1,6 @@
 """
 Interface to the env_batch.xml file.  This class inherits from EnvBase
 """
-import stat
 from CIME.XML.standard_module_setup import *
 from CIME.task_maker import TaskMaker
 from CIME.utils import convert_to_type
@@ -20,6 +19,7 @@ class EnvBatch(EnvBase):
         EnvBase.__init__(self, case_root, infile)
         self.prereq_jobid = None
         self.batchtype = None
+        self.job_id = ""
 
     def set_value(self, item, value, subgroup=None, ignore_type=False):
         val = None
@@ -144,7 +144,10 @@ class EnvBatch(EnvBase):
 
     def create_job_groups(self, bjobs):
         # only the job_submission group is repeated
-        group = self.get_node("group", {"id":"job_submission"})
+        group = self.get_optional_node("group", {"id":"job_submission"})
+        if group is None:
+            logger.warn("No job_submission group defined in env_batch")
+            return
         # look to see if any jobs are already defined
         cjobs = self.get_jobs()
         childnodes = []
@@ -191,8 +194,11 @@ class EnvBatch(EnvBase):
         if batchobj.machine_node is not None:
             self.root.append(deepcopy(batchobj.machine_node))
 
+    def make_batch_script_from_file(self, input_file, job, case):
+        expect(os.path.exists(input_file), "input file '%s' does not exist" % input_file)
+        return self.make_batch_script(open(input_file,"r").read(), job, case)
+
     def make_batch_script(self, input_template, job, case):
-        expect(os.path.exists(input_template), "input file '%s' does not exist" % input_template)
 
         task_maker = TaskMaker(case)
 
@@ -224,18 +230,21 @@ class EnvBatch(EnvBase):
             self.task_count = task_count
             self.num_nodes = task_count
             self.pedocumentation = ""
-        self.job_id = case.get_value("CASE") + os.path.splitext(job)[1]
-        if "pleiades" in case.get_value("MACH"):
+        casename = case.get_value("CASE")
+        if casename is not None:
+            self.job_id = casename
+        self.job_id += os.path.splitext(job)[1]
+        machine_name = case.get_value("MACH")
+        if machine_name is not None and "pleiades" in machine_name:
             # pleiades jobname needs to be limited to 15 chars
             self.job_id = self.job_id[:15]
         self.output_error_path = self.job_id
 
         self.batchdirectives = self.get_batch_directives()
 
-        output_text = transform_vars(open(input_template,"r").read(), case=case, check_members=self)
-        with open(job, "w") as fd:
-            fd.write(output_text)
-        os.chmod(job, os.stat(job).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        output_text = transform_vars(input_template, case=case, check_members=self)
+
+        return output_text
 
 
     def set_job_defaults(self, bjobs, pesize=None):

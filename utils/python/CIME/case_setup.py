@@ -2,6 +2,7 @@
 Library for case.setup.
 """
 
+import shutil, time, glob, stat
 from CIME.XML.standard_module_setup import *
 
 from CIME.check_lockedfiles import check_lockedfiles
@@ -10,8 +11,6 @@ from CIME.XML.env_mach_pes  import EnvMachPes
 from CIME.XML.component     import Component
 from CIME.XML.compilers     import Compilers
 from CIME.utils             import expect, run_cmd, append_status
-
-import shutil, time, glob
 
 logger = logging.getLogger(__name__)
 
@@ -222,15 +221,21 @@ def case_setup(case, clean=False, test_mode=False, reset=False):
             env_batch = case._get_env("batch")
             for job in env_batch.get_jobs():
                 input_batch_script  = os.path.join(case.get_value("MACHDIR"), env_batch.get_value('template', subgroup=job))
+                output_batch_script = None
                 if job == "case.test" and testcase is not None and not test_mode:
-                    logger.info("Writing %s script" % job)
                     testscript = os.path.join(cimeroot, "scripts", "Testing", "Testcases", "%s_script" % testcase)
                     # Short term fix to be removed when csh tests are removed
                     if not os.path.exists(testscript):
-                        env_batch.make_batch_script(input_batch_script, job, case)
+                        output_batch_script = env_batch.make_batch_script_from_file(input_batch_script, job, case)
                 elif job != "case.test":
+                    output_batch_script = env_batch.make_batch_script_from_file(input_batch_script, job, case)
+
+                if output_batch_script is not None:
                     logger.info("Writing %s script" % job)
-                    env_batch.make_batch_script(input_batch_script, job, case)
+                    with open(job, "w") as fd:
+                        fd.write(output_batch_script)
+                    os.chmod(job, os.stat(job).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
 
             # Make a copy of env_mach_pes.xml in order to be able
             # to check that it does not change once case.setup is invoked

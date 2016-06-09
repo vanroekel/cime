@@ -419,7 +419,9 @@ class Case(object):
 
         return machobj
 
-
+    def make_batch_script(self, template, job):
+        env_batch = self._get_env("batch")
+        return env_batch.make_batch_script(template, job, self)
 
 
     def set_batch_system(self, machobj, pesize=None, batch_system_type=None):
@@ -436,7 +438,6 @@ class Case(object):
         if pesize is None:
             pesize = self.get_value("PES_PER_NODE")
         env_batch.set_job_defaults(bjobs, pesize=pesize)
-        self._env_files_that_need_rewrite.add(env_batch)
 
     def configure(self, compset_name, grid_name, machine_name=None,
                   project=None, pecount=None, compiler=None, mpilib=None,
@@ -481,7 +482,7 @@ class Case(object):
         #--------------------------------------------
         # set machine values in env_xxx files
         machobj = self.set_machine(machine_name=machine_name, compiler=compiler, mpilib=mpilib)
-
+        machine_name = machobj.get_machine_name()
         # Overwriting an existing exeroot or rundir can cause problems
         exeroot = self.get_value("EXEROOT")
         rundir = self.get_value("RUNDIR")
@@ -550,6 +551,7 @@ class Case(object):
             mach_pes_obj.set_value("NTHRDS_GLC",1)
 
         self.set_batch_system(machobj)
+        self._env_files_that_need_rewrite.add(self._get_env("batch"))
         self.set_value("COMPSET",self._compsetname)
 
         self._set_pio_xml()

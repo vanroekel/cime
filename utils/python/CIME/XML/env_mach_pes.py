@@ -17,12 +17,14 @@ class EnvMachPes(EnvBase):
 
     def get_value(self, vid, attribute={}, resolved=True, subgroup=None):
         value = EnvBase.get_value(self, vid, attribute, resolved, subgroup)
-        if "NTASKS" in vid and value < 0:
-            value = -1*value*self.get_value("PES_PER_NODE")
-        if "NTHRDS" in vid and value < 0:
-            value = -1*value*self.get_value("PES_PER_NODE")
-        if "ROOTPE" in vid and value < 0:
-            value = -1*value*self.get_value("PES_PER_NODE")
+        if value is not None and value < 0:
+            pes_per_node = self.get_value("PES_PER_NODE")
+            if "NTASKS" in vid:
+                value = -1*value*pes_per_node
+            if "NTHRDS" in vid:
+                value = -1*value*pes_per_node
+            if "ROOTPE" in vid:
+                value = -1*value*pes_per_node
         return value
     #
     # We need a set value until we full transition from perl
