@@ -276,6 +276,7 @@ class EnvBatch(EnvBase):
             walltime = self.get_max_walltime(queue) if walltime is None else walltime
             if walltime is None:
                 walltime = self.get_default_walltime()
+            expect( walltime is not None , "Walltime not defined, set either max walltime for job $s or default walltime for machine "%job)    
             self.set_value( "JOB_WALLCLOCK_TIME", walltime , subgroup=job)
             logger.info("Job %s queue %s walltime %s"%(job, queue, walltime))
 
