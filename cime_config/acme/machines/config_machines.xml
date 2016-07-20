@@ -1157,6 +1157,7 @@
          <SAVE_TIMING_DIR>$ENV{PROJWORK}/$PROJECT</SAVE_TIMING_DIR>
          <OS>CNL</OS>
 	 <BATCH_SYSTEM>pbs</BATCH_SYSTEM>
+	 <PES_PER_NODE>16</PES_PER_NODE> <!-- difference to MAX_TASKS_PER_NODE-->
          <SUPPORTED_BY>acme</SUPPORTED_BY>
          <GMAKE_J>8</GMAKE_J>
          <MAX_TASKS_PER_NODE>16</MAX_TASKS_PER_NODE>
@@ -1250,7 +1251,11 @@
 					<command name="load">cray-netcdf-hdf5parallel/4.3.3.1</command>
 					<command name="load">cray-parallel-netcdf/1.5.0</command>	
 				</modules>	
-					 
+				
+				<modules>
+				  <command name="list">>&#38; software_environment.txt</command>
+</modules>
+    
 				 <!-- Default -->
 				 
 				 <!--
