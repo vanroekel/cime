@@ -1107,6 +1107,7 @@ BG_SMP_FAST_WAKEUP=yes $LOCARGS</arg>
       <!-- Always execute -->
       <modules>
 	<command name="purge"></command>
+	<command name="load">python/2.7.9</command>
 	<command name="load">eswrap</command>
 	<command name="load">PrgEnv-pgi cray-mpich</command>
 	<command name="add">craype-interlagos</command>
