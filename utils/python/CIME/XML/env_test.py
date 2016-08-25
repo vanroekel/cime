@@ -68,29 +68,6 @@ class EnvTest(EnvBase):
             value = idnode.text
         return value
 
-    def get_step_phase_cnt(self,step):
-        bldnodes = self.get_nodes(step)
-        cnt = 0
-        for node in bldnodes:
-            cnt = max(cnt, int(node.attrib["phase"]))
-        return cnt
-
-    def get_settings_for_phase(self, name, cnt):
-        node = self.get_optional_node(name,attributes={"phase":cnt})
-        settings = []
-        if node is not None:
-            for child in node:
-                logger.debug ("Here child is %s with value %s"%(child.tag,child.text))
-                settings.append((child.tag, child.text))
-
-        return settings
-
-    def run_phase_get_clone_name(self, phase):
-        node = self.get_node("RUN",attributes={"phase":str(phase)})
-        if "clone" in node.attrib:
-            return node.attrib["clone"]
-        return None
-
     def cleanupnode(self, node):
         '''
         keep the values component set
