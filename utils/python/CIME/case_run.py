@@ -92,6 +92,7 @@ def run_model(case):
 
     machine = Machines(machine=case.get_value("MACH"))
     cmd = machine.get_full_mpirun(tm, case, "case.run")
+    logger.warning(cmd)
     cmd = case.get_resolved_value(cmd)
 
     logger.info("run command is %s " %cmd)

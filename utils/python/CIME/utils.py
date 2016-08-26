@@ -780,6 +780,7 @@ def transform_vars(text, case=None, subgroup=None, check_members=None, default=N
     >>> transform_vars("I say {{ foo }}", check_members=member_store)
     'I say hi'
     """
+    logger.warning("text=%s, case=%s, subgroup=%s , check_members=%s , default=%s", text , case , subgroup, check_members, default)
     directive_re = re.compile(r"{{ (\w+) }}", flags=re.M)
     # loop through directive text, replacing each string enclosed with
     # template characters with the necessary values.

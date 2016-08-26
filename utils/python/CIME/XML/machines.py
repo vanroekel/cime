@@ -260,6 +260,7 @@ class Machines(GenericXML):
         """
         Find best match, return (executable, {arg_name : text})
         """
+        logger.warning("attribs: %s" , attribs)
         mpirun_nodes = self.get_nodes("mpirun", root=self.machine_node)
         best_match = None
         best_num_matched = -1
@@ -267,6 +268,7 @@ class Machines(GenericXML):
         best_num_matched_default = -1
         args = {}
         for mpirun_node in mpirun_nodes:
+            logger.warning("Node %s" , mpirun_node.tag)
             xml_attribs = mpirun_node.attrib
             all_match = True
             matches = 0
@@ -337,6 +339,8 @@ class Machines(GenericXML):
             }
 
         executable, args = self.get_mpirun(mpi_attribs, check_members, case, job)
+
+        logger.warning("Machine: %s\%s" , executable, args)
 
         mpi_arg_string = " ".join(args.values())
         batch_system = self.get_value("BATCH_SYSTEM")
