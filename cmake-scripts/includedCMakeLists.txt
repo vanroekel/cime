@@ -1,7 +1,35 @@
+#
+# This main CMakeLists.txt is written to be included from either
+# the top level of CIME or the top level of ACME. The required
+# CIME_REL_DIR variable is set in CIME to be "." and in ACME
+# to be "cime".  Except for this misdirection, this is meant
+# to be the full-functioning top-level CMakeLists.txt file 
+# [Andy, 10/4/16]
+#
+#
 cmake_minimum_required(VERSION 2.7)
 
-OPTION(ACME_BUILD "Flag to distinguish Cmake logic for full ACME build versus Unit Tests" ON)
+# May want to rename CIME_BUILD
+OPTION(ACME_BUILD "Flag to distinguish Cmake logic for CIME code build, as opposed to Unit Tests" ON)
 OPTION(HAVE_ACME "Flag for CIME to know that we are building ACME components" OFF)
+
+
+IF (NOT DEFINED CIME_REL_DIR)
+  MESSAGE(FATAL_ERROR "\nERROR: CIME_REL_DIR, the relative path to CIME from
+the top level CMakeLists file, must be defined: 
+ '.' for CIME build, 'cime' for ACME build.\n")
+ENDIF()
+
+MESSAGE("----------------------------------------------")
+MESSAGE("Building with CMake for CIME = ${CMAKE_SOURCE_DIR}/${CIME_REL_DIR}")
+IF (DEFINED  ACME_COMPONENTS_DIR)
+  MESSAGE("   and with ACME_COMPONENTS_DIR = ${ACME_COMPONENTS_DIR}")
+  SET(HAVE_ACME ON)
+ELSE()
+  MESSAGE("   ACME_COMPONENTS_DIR not set; just building CIME.")
+  SET(HAVE_ACME OFF)
+ENDIF()
+MESSAGE("----------------------------------------------\n")
 
 PROJECT(ACME Fortran C)
 FIND_PACKAGE(MPI)
@@ -54,19 +82,16 @@ ADD_DEFINITIONS(-DFORTRANUNDERSCORE)
 #ADD_DEFINITIONS(-DHAVE_COMM_F2C -D_MPI)
 
 # Path to CIME/cime dir (either standalone or within ACME)
-#SET(CIME_DIR ${ACME_MODEL_DIR}/cime)
-SET(CIME_DIR .)
-
-message("cime dir:  ${CIME_DIR}") 
+message("cime dir:  ${CIME_REL_DIR}") 
 message("acme binary dir:  ${ACME_BINARY_DIR}") 
 
-SET(MPEU_DIR ${CIME_DIR}/externals/mct/mpeu)
-SET(MCT_DIR ${CIME_DIR}/externals/mct/mct)
-SET(GPTL_DIR ${CIME_DIR}/share/timing)
-SET(ESMF_DIR ${CIME_DIR}/share/esmf_wrf_timemgr)
-SET(SEQ_DIR ${CIME_DIR}/driver_cpl/shr)
-SET(SHR_DIR ${CIME_DIR}/share/csm_share/shr)
-SET(DRIVER_DIR ${CIME_DIR}/driver_cpl/driver)
+SET(MPEU_DIR ${CIME_REL_DIR}/externals/mct/mpeu)
+SET(MCT_DIR ${CIME_REL_DIR}/externals/mct/mct)
+SET(GPTL_DIR ${CIME_REL_DIR}/share/timing)
+SET(ESMF_DIR ${CIME_REL_DIR}/share/esmf_wrf_timemgr)
+SET(SEQ_DIR ${CIME_REL_DIR}/driver_cpl/shr)
+SET(SHR_DIR ${CIME_REL_DIR}/share/csm_share/shr)
+SET(DRIVER_DIR ${CIME_REL_DIR}/driver_cpl/driver)
 
 SET(MPEU_BINARY_DIR ${ACME_BINARY_DIR}/${MPEU_DIR})
 SET(MCT_BINARY_DIR ${ACME_BINARY_DIR}/${MCT_DIR})
@@ -92,19 +117,19 @@ ADD_SUBDIRECTORY(${DRIVER_DIR})
 #
 
 MESSAGE("\nConfiguring Components:")
-SET(LND_D_DIR      ${CIME_DIR}/components/data_comps/dlnd)
-SET(LND_S_DIR      ${CIME_DIR}/components/stub_comps/slnd/cpl)
-SET(OCN_D_DIR      ${CIME_DIR}/components/data_comps/docn)
-SET(OCN_S_DIR      ${CIME_DIR}/components/stub_comps/socn/cpl)
-SET(ICE_D_DIR      ${CIME_DIR}/components/data_comps/dice)
-SET(ICE_S_DIR      ${CIME_DIR}/components/stub_comps/sice/cpl)
-SET(GLC_S_DIR      ${CIME_DIR}/components/stub_comps/sglc/cpl)
-SET(ATM_D_DIR      ${CIME_DIR}/components/data_comps/datm)
-SET(ATM_S_DIR      ${CIME_DIR}/components/stub_comps/satm/cpl)
-SET(ROF_D_DIR      ${CIME_DIR}/components/data_comps/drof)
-SET(ROF_S_DIR      ${CIME_DIR}/components/stub_comps/srof/cpl)
-SET(WAV_S_DIR      ${CIME_DIR}/components/stub_comps/swav/cpl)
-SET(ESP_S_DIR      ${CIME_DIR}/components/stub_comps/sesp/cpl)
+SET(LND_D_DIR      ${CIME_REL_DIR}/components/data_comps/dlnd)
+SET(LND_S_DIR      ${CIME_REL_DIR}/components/stub_comps/slnd/cpl)
+SET(OCN_D_DIR      ${CIME_REL_DIR}/components/data_comps/docn)
+SET(OCN_S_DIR      ${CIME_REL_DIR}/components/stub_comps/socn/cpl)
+SET(ICE_D_DIR      ${CIME_REL_DIR}/components/data_comps/dice)
+SET(ICE_S_DIR      ${CIME_REL_DIR}/components/stub_comps/sice/cpl)
+SET(GLC_S_DIR      ${CIME_REL_DIR}/components/stub_comps/sglc/cpl)
+SET(ATM_D_DIR      ${CIME_REL_DIR}/components/data_comps/datm)
+SET(ATM_S_DIR      ${CIME_REL_DIR}/components/stub_comps/satm/cpl)
+SET(ROF_D_DIR      ${CIME_REL_DIR}/components/data_comps/drof)
+SET(ROF_S_DIR      ${CIME_REL_DIR}/components/stub_comps/srof/cpl)
+SET(WAV_S_DIR      ${CIME_REL_DIR}/components/stub_comps/swav/cpl)
+SET(ESP_S_DIR      ${CIME_REL_DIR}/components/stub_comps/sesp/cpl)
 SET(LND_D_BINARY_DIR ${ACME_BINARY_DIR}/${LND_D_DIR})
 SET(LND_S_BINARY_DIR ${ACME_BINARY_DIR}/${LND_S_DIR})
 SET(OCN_D_BINARY_DIR ${ACME_BINARY_DIR}/${OCN_D_DIR})
@@ -154,15 +179,13 @@ ADD_SUBDIRECTORY(${ESP_S_DIR})
 #ADD_SUBDIRECTORY(${MPAS_GLCDRIVER_DIR})
 
 IF (HAVE_ACME) 
-SET(ACME_MODEL_DIR ../../)
+  SET(LND_CLM_DIR      ${ACME_COMPONENTS_DIR}/clm/src)
+  SET(LND_CLM_BINARY_DIR ${ACME_BINARY_DIR}/${LND_CLM_DIR})
+  ADD_SUBDIRECTORY(${LND_CLM_DIR})
 
-SET(LND_CLM_DIR      ${ACME_MODEL_DIR}/components/clm/src)
-SET(LND_CLM_BINARY_DIR ${ACME_BINARY_DIR}/${LND_CLM_DIR})
-ADD_SUBDIRECTORY(${LND_CLM_DIR})
-
-SET(RTM_DIR      ${ACME_MODEL_DIR}/components/rtm/src)
-SET(RTM_BINARY_DIR ${ACME_BINARY_DIR}/${RTM_DIR})
-ADD_SUBDIRECTORY(${RTM_DIR})
+  SET(RTM_DIR      ${ACME_COMPONENTS_DIR}/rtm/src)
+  SET(RTM_BINARY_DIR ${ACME_BINARY_DIR}/${RTM_DIR})
+  ADD_SUBDIRECTORY(${RTM_DIR})
 ENDIF()
 
 
