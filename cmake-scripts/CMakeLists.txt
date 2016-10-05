@@ -55,7 +55,7 @@ ADD_DEFINITIONS(-DFORTRANUNDERSCORE)
 
 # Path to CIME/cime dir (either standalone or within ACME)
 #SET(CIME_DIR ${ACME_MODEL_DIR}/cime)
-SET(CIME_DIR cime)
+SET(CIME_DIR .)
 
 message("cime dir:  ${CIME_DIR}") 
 message("acme binary dir:  ${ACME_BINARY_DIR}") 

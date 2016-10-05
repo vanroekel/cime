@@ -3,12 +3,14 @@ rm CMakeCache.txt
 rm -rf CMakeFiles
 
 #ACMEDIR=/home/agsalin/ACME
+CIMEDIR=/home/agsalin/CIME
 NETCDFDIR=$SEMS_NETCDF_ROOT
 HDF5DIR=$SEMS_HDF5_ROOT
 PIODIR=/home/agsalin/install/pio
 
 
 cmake \
+  -D ACME_BUILD=ON \
   -D CMAKE_VERBOSE_MAKEFILE=OFF \
   -D CMAKE_Fortran_COMPILER=mpif90 \
   -D CMAKE_C_COMPILER=mpicc \
@@ -18,7 +20,7 @@ cmake \
   -D ACME_HDF5_DIR=$HDF5DIR \
   -D ACME_PIO_DIR=$PIODIR \
 \
- ..
+ $CIMEDIR
 
 
 #Add these back in when doing CAM
