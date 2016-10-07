@@ -345,10 +345,7 @@ class EnvBatch(EnvBase):
             expect(job in alljobs, "Do not know about batch job %s"%job)
             startindex = alljobs.index(job)
 
-        for index, job in enumerate(alljobs):
-            logger.debug( "Index %d job %s startindex %d"%(index, job, startindex))
-            if index < startindex:
-                continue
+        for job in alljobs[startindex:]:
             try:
                 prereq = self.get_value('prereq', subgroup=job, resolved=False)
                 if prereq is None:
@@ -358,10 +355,12 @@ class EnvBatch(EnvBase):
                     prereq = eval(prereq)
             except:
                 expect(False,"Unable to evaluate prereq expression '%s' for job '%s'"%(self.get_value('prereq',subgroup=job), job))
+
             if prereq:
                 jobs.append((job,self.get_value('dependency', subgroup=job)))
             if self.batchtype == "cobalt":
                 break
+
         depid = {}
         for job, dependency in jobs:
             if dependency is not None:
