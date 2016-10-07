@@ -21,9 +21,9 @@ the top level CMakeLists file, must be defined:
 ENDIF()
 
 MESSAGE("----------------------------------------------")
-MESSAGE("Building with CMake for CIME = ${CMAKE_SOURCE_DIR}/${CIME_REL_DIR}")
+MESSAGE("Building with CMake with CIME in: ${CMAKE_SOURCE_DIR}/${CIME_REL_DIR}")
 IF (DEFINED  ACME_COMPONENTS_DIR)
-  MESSAGE("   and with ACME_COMPONENTS_DIR = ${ACME_COMPONENTS_DIR}")
+  MESSAGE("   and with ACME components in: ${CMAKE_SOURCE_DIR}/${ACME_COMPONENTS_DIR}")
   SET(HAVE_ACME ON)
 ELSE()
   MESSAGE("   ACME_COMPONENTS_DIR not set; just building CIME.")
@@ -74,8 +74,8 @@ ENDIF()
 message("\nAGS hack for GNU:  -DCPRGNU") 
 ADD_DEFINITIONS(-DCPRGNU)
 
-message("AGS hack2:   -DFORTRANUNDERSCORE") 
-ADD_DEFINITIONS(-DFORTRANUNDERSCORE)
+message("AGS hack2:   -DFORTRANUNDERSCORE -D_MPI") 
+ADD_DEFINITIONS(-DFORTRANUNDERSCORE -D_MPI)
 
 # not sure if needed
 #message("AGS hack3:   -DHAVE_COMM_F2C -D_MPI") # for MPAS
@@ -188,6 +188,11 @@ IF (HAVE_ACME)
   ADD_SUBDIRECTORY(${RTM_DIR})
 ENDIF()
 
+IF (HAVE_ACME) 
+  SET(ATM_CAM_DIR      ${ACME_COMPONENTS_DIR}/cam/src)
+  SET(ATM_CAM_BINARY_DIR ${ACME_BINARY_DIR}/${ATM_CAM_DIR})
+  ADD_SUBDIRECTORY(${ATM_CAM_DIR})
+ENDIF()
 
 MESSAGE("\nAdding executables:")
 MESSAGE("   + acme_A.exe: A-Compset")
@@ -197,12 +202,16 @@ MESSAGE("   + acme_S.exe: S-Compset")
 ADD_EXECUTABLE(acme_S.exe ${DRIVER_DIR}/cesm_driver.F90)
 
 IF (HAVE_ACME) 
-MESSAGE("   + acme_I.exe: I-Compset")
-ADD_EXECUTABLE(acme_I.exe ${DRIVER_DIR}/cesm_driver.F90)
-#MESSAGE("   + acme_MPASLI_ONLY.exe: MPASLI_ONLY-Compset")
-#ADD_EXECUTABLE(acme_MPASLI_ONLY.exe ${DRIVER_DIR}/cesm_driver.F90)
+  MESSAGE("   + acme_I.exe: I-Compset")
+  ADD_EXECUTABLE(acme_I.exe ${DRIVER_DIR}/cesm_driver.F90)
+  #MESSAGE("   + acme_MPASLI_ONLY.exe: MPASLI_ONLY-Compset")
+  #ADD_EXECUTABLE(acme_MPASLI_ONLY.exe ${DRIVER_DIR}/cesm_driver.F90)
 ENDIF()
 
+IF (HAVE_ACME) 
+  MESSAGE("   + acme_F.exe: F-Compset")
+  ADD_EXECUTABLE(acme_F.exe ${DRIVER_DIR}/cesm_driver.F90)
+ENDIF()
 
 MESSAGE("\nAGS: HHEELLPP  what include dirs to add: data, stub, active?
 Executable dependent??")
@@ -258,6 +267,13 @@ TARGET_LINK_LIBRARIES(acme_I.exe  compmod
 #                      satm srof swav sesp
 #                      driver shr seq shrcal gptl esmf mct mpeu shrsys 
 #                      ${PIO_LIB} ${NETCDF_LIB})
+ENDIF()
+
+IF (HAVE_ACME)
+TARGET_LINK_LIBRARIES(acme_F.exe  compmod
+                      clm docn dice sglc cam rtm swav sesp
+                      driver shr seq shrcal gptl esmf mct mpeu shrsys 
+                      ${PIO_LIB} ${NETCDF_LIB} -llapack)
 ENDIF()
 
 MESSAGE("\nAnd CMake says...:")
