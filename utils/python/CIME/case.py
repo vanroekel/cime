@@ -897,8 +897,9 @@ class Case(object):
 
         # *** create case object as deepcopy of clone object ***
         srcroot = os.path.join(newcase_cimeroot,"..")
-        newcase = self.copy(newcasename, newcaseroot, newsrcroot=srcroot)
-        newcase.set_value("CIMEROOT", newcase_cimeroot)
+        newcase = self.copy(newcasename, newcaseroot,
+                            newcimeroot=newcase_cimeroot,
+                            newsrcroot=srcroot)
 
         # determine if will use clone executable or not
         if keepexe:
