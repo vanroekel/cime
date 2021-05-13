@@ -182,6 +182,7 @@
       <value component="socn"                         >$SRCROOT/components/stub_comps/socn</value>
       <value component="xocn"                         >$SRCROOT/components/xcpl_comps/xocn</value>
       <value component="mpaso"                        >$SRCROOT/components/mpas-ocean</value>
+	  <value component="omega"                        >$SRCROOT/components/omega</value>
     </values>
     <group>case_comps</group>
     <file>env_case.xml</file>
@@ -257,6 +258,7 @@
       <value component="elm"      >$COMP_ROOT_DIR_LND/cime_config/config_compsets.xml</value>
       <value component="cice"     >$COMP_ROOT_DIR_ICE/cime_config/config_compsets.xml</value>
       <value component="mpaso"    >$COMP_ROOT_DIR_OCN/cime_config/config_compsets.xml</value>
+	  <value component="omega"    >$COMP_ROOT_DIR_OCN/cime_config/config_compsets.xml</value>
       <value component="mali"     >$COMP_ROOT_DIR_GLC/cime_config/config_compsets.xml</value>
       <value component="mpassi"   >$COMP_ROOT_DIR_ICE/cime_config/config_compsets.xml</value>
       <value component="mosart"   >$COMP_ROOT_DIR_ROF/cime_config/config_compsets.xml</value>
@@ -278,6 +280,7 @@
       <value component="elm"      >$SRCROOT/cime_config/allactive/config_pesall.xml</value>
       <value component="cice"     >$SRCROOT/cime_config/allactive/config_pesall.xml</value>
       <value component="mpaso"    >$SRCROOT/cime_config/allactive/config_pesall.xml</value>
+	  <value component="omega"    >$SRCROOT/cime_config/allactive/config_pesall.xml</value>
       <value component="mali"     >$SRCROOT/cime_config/allactive/config_pesall.xml</value>
       <value component="mpassi"   >$SRCROOT/cime_config/allactive/config_pesall.xml</value>
       <value component="ww3"      >$SRCROOT/cime_config/allactive/config_pesall.xml</value>
@@ -525,10 +528,10 @@
     <type>char</type>
     <values>
       <value lib="kokkos">$CIMEROOT/src/build_scripts/buildlib.kokkos</value>
-      <value lib="gptl">$SRCROOT/share/build/buildlib.gptl</value>
+      <value lib="gptl">$CIMEROOT/src/build_scripts/buildlib.gptl</value>
       <value lib="pio">$CIMEROOT/src/build_scripts/buildlib.pio</value>
       <value lib="mct">$CIMEROOT/src/build_scripts/buildlib.mct</value>
-      <value lib="csm_share">$SRCROOT/share/build/buildlib.csm_share</value>
+      <value lib="csm_share">$CIMEROOT/src/build_scripts/buildlib.csm_share</value>
       <value lib="mpi-serial">$CIMEROOT/src/build_scripts/buildlib.mpi-serial</value>
       <value lib="cprnc">$CIMEROOT/src/build_scripts/buildlib.cprnc</value>
     </values>
